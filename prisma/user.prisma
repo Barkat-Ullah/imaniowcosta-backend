@@ -1,0 +1,120 @@
+model User {
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  fullName         String
+  email            String        @unique
+  phoneNumber      String?       @unique
+  password         String
+  role             UserRoleEnum  @default(USER)
+  status           UserStatus    @default(ACTIVE)
+  address          String?
+  image            String?
+  dob              DateTime?
+  educationLevel   String?
+  employmentStatus String?
+  parentingGoal    String?
+  supportSystem    String?
+  relation         RelationEnum?
+
+  otp                           String?
+  otpExpiry                     DateTime?
+  emailVerificationToken        String?
+  emailVerificationTokenExpires String?
+
+  isEmailVerified Boolean @default(false)
+  isDeleted       Boolean @default(false)
+
+  stripeCustomerId String?
+  fcmToken         String?
+
+  payments Payment[]
+
+  receiver  Notification[] @relation("Receiver")
+  sender    Notification[] @relation("Sender")
+  followers Follow[]       @relation("Followers")
+  following Follow[]       @relation("Following")
+
+  roomSender   Room[] @relation("RoomSender")
+  roomReceiver Room[] @relation("RoomReceiver")
+
+  sentChats         Chat[]            @relation("ChatSender")
+  receivedChats     Chat[]            @relation("ChatReceiver")
+  learningLibraries LearningLibrary[] @relation("BlogCreator")
+  favorites         favorite[]        @relation("UserCreator")
+  childrenS         Children[]        @relation("ChildrenCreator")
+
+  //self relation
+  createdById  String? @db.ObjectId
+  createdBy    User?   @relation("CareGiverManagement", fields: [createdById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  createdUsers User[]  @relation("CareGiverManagement")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model LearningLibrary {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  description   String
+  category      EnumCategory
+  content       EnumContent
+  tags          String[]
+  estimatedTime String
+  image         String?
+  content_url   String?
+
+  createdId String     @db.ObjectId
+  user      User       @relation("BlogCreator", fields: [createdId], references: [id])
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  favorites favorite[]
+
+  @@map("learningLibrary")
+}
+
+model favorite {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String @db.ObjectId
+  articleId String @db.ObjectId
+
+  isFavorite Boolean @default(false)
+
+  article LearningLibrary @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user    User            @relation("UserCreator", fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("love_react")
+}
+
+enum RelationEnum {
+  Parent
+  Guardian
+  Grand_Parent
+  Caregiver
+}
+
+enum UserRoleEnum {
+  USER
+  ADMIN
+  CARE_GIVER
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum EnumContent {
+  Articles
+  Podcast
+  Books
+}
+
+enum EnumCategory {
+  Daily_Living
+  Communication
+  Parent_Support
+}

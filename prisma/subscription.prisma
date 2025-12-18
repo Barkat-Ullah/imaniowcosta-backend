@@ -1,0 +1,50 @@
+model Subscription {
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+
+    title       String
+    description String
+    price       Float
+
+    childCreation     Int?
+    careGiverCreation Int?
+    duration          DurationType
+    isDeleted         Boolean      @default(false)
+
+    // stripeProductId String?
+    // stripePriceId   String?
+
+    userSubscriptions UserSubscription[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("subscription")
+}
+
+model UserSubscription {
+    id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+    subscriptionId     String    @db.ObjectId
+    userId             String    @db.ObjectId
+    couponId           String?   @db.ObjectId
+    originalPrice      Float
+    discountedPrice    Float?
+    finalPrice         Float
+    startDate          DateTime
+    endDate            DateTime?
+    trialDaysRemaining Int?
+
+    subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+    user         User         @relation("UserSubscriptions", fields: [userId], references: [id])
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([userId, subscriptionId])
+    @@map("userSubscription")
+}
+
+enum DurationType {
+    Freely
+    Monthly
+    Yearly
+}

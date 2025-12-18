@@ -1,0 +1,82 @@
+// Main Children Model
+model Children {
+    id                  String               @id @default(auto()) @map("_id") @db.ObjectId
+    fullName            String
+    dateOfBirth         DateTime
+    personalizationType PersonalizationType?
+    learningStage       LearningStage? //early lerner
+    ageGroup            String? // early lerner age
+    supportReceived     SupportReceived[]
+    communication       CommunicationLevel?
+    toileting           ToiletingStatus?
+    diagnoses           String[]
+    image               String?
+
+    isDeleted Boolean @default(false)
+
+    // Relations - One to Man
+    childDocument   ChildDocument[]
+    providers       Provider[]
+    healthCareNotes HealthCareNote[]
+    preferenceNotes PreferenceSensoryNote[]
+
+    // Relation
+    creatorId String @db.ObjectId
+    user      User   @relation("ChildrenCreator", fields: [creatorId], references: [id])
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("children")
+}
+
+enum PersonalizationType {
+    ByStage
+    ByAge
+}
+
+enum LearningStage {
+    Early_Learner
+    Emerging_Explorer
+    Growing_Thinker
+    Over_10Years_Old
+}
+
+enum SupportReceived {
+    Specialized_School_Program
+    IEP
+    Speech_Therapy
+    Occupational_Therapy
+    ABA_Therapy
+    Counseling_Psychology
+    Social_Skills_Group
+    Home_Health_Aide_Caregiver_Support
+    None_Right_Now
+    Other
+}
+
+enum CommunicationLevel {
+    Non_Verbal
+    Pre_Semi_Verbal
+    Verbal
+}
+
+enum ToiletingStatus {
+    Not_Yet_Potty_Trained
+    Fully_Potty_Trained
+    Currently_Potty_Training
+    Not_Able_To_Be_Potty_Trained
+}
+
+// enum ChildDiagnosis {
+//     Autism
+//     Down_Syndrome
+//     ADHD
+//     Cerebral_Palsy
+//     Deaf_Or_Hard_Of_Hearing
+//     Blind_Or_Low_Vision
+//     Chromosomal_Deletion_Duplication
+//     Currently_Waiting_Evaluation
+//     No_Diagnosis_Yet
+//     Other
+// }

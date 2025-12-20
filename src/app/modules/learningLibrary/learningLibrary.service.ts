@@ -6,6 +6,7 @@ import httpStatus from 'http-status';
 import { paginationHelper } from '../../utils/calculatePagination';
 import { Request } from 'express';
 import { fileUploader } from '../../utils/fileUploader';
+// import { cache, CACHE_KEYS, invalidateAllPostsCaches } from './cache.constant';
 
 // create LearningLibrary
 const createLearningLibrary = async (req: Request) => {
@@ -20,6 +21,7 @@ const createLearningLibrary = async (req: Request) => {
 
   const addedData = { ...data, image, createdId };
   const result = await prisma.learningLibrary.create({ data: addedData });
+  // invalidateAllPostsCaches();
   return result;
 };
 
@@ -39,6 +41,16 @@ const getLearningLibraryListIntoDb = async (
 ) => {
   const { page, limit, skip } = paginationHelper.calculatePagination(options);
   const { searchTerm, ...filterData } = filters;
+
+  //  const cached = cache.get(CACHE_KEYS);
+  //  if (cached) {
+  //    console.log(`✅ Cache HIT: getAllPost (${cacheKey})`);
+  //    return cached;
+  //  }
+
+  //  console.log(
+  //    `❌ Cache MISS: getAllPost (${cacheKey}) - Fetching from database`,
+  //  );
 
   const andConditions: Prisma.LearningLibraryWhereInput[] = [];
 
@@ -115,7 +127,6 @@ const getLearningLibraryListIntoDb = async (
       createdAt: 'desc',
     },
   });
-  
 
   const total = await prisma.learningLibrary.count({
     where: whereConditions,

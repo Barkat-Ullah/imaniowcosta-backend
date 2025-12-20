@@ -1,0 +1,23 @@
+model Inspire {
+    id          String   @id @default(auto()) @map("_id") @db.ObjectId
+    text       String
+    date        DateTime?
+
+    status    EnumInspireStatus
+    type      EnumInspireType
+    createdAt DateTime          @default(now())
+    updatedAt DateTime          @updatedAt
+
+    @@map("inspire")
+}
+
+enum EnumInspireStatus {
+    Sent
+    Manual
+    Scheduled
+}
+
+enum EnumInspireType {
+    Automatic
+    Schedule
+}

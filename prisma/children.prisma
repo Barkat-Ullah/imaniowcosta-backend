@@ -14,7 +14,7 @@ model Children {
 
     isDeleted Boolean @default(false)
 
-    // Relations - One to Man
+    // Relations - One to Many
     childDocument   ChildDocument[]
     providers       Provider[]
     healthCareNotes HealthCareNote[]

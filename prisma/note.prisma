@@ -10,6 +10,9 @@ model ChildDocument {
 
     uploadedAt DateTime @default(now())
 
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
     @@map("child_documents")
 }
 
@@ -23,6 +26,8 @@ model Provider {
     address   String?
     notes     String?
 
+    status ProviderStatus @default(Incoming)
+
     childId String   @db.ObjectId
     child   Children @relation(fields: [childId], references: [id], onDelete: Cascade)
 
@@ -30,6 +35,11 @@ model Provider {
     updatedAt DateTime @updatedAt
 
     @@map("providers")
+}
+
+enum ProviderStatus {
+    Incoming
+    Upcoming
 }
 
 enum SpecialtyEnum {
@@ -46,7 +56,7 @@ enum SpecialtyEnum {
 
 // 3. Health & Care Notes
 model HealthCareNote {
-    id          String   @id @default(auto()) @map("_id") @db.ObjectId
+    id          String    @id @default(auto()) @map("_id") @db.ObjectId
     title       String
     description String?
     note        NoteType?
@@ -72,7 +82,7 @@ enum NoteType {
 
 // 4. Preferences & Sensory Notes
 model PreferenceSensoryNote {
-    id          String              @id @default(auto()) @map("_id") @db.ObjectId
+    id          String               @id @default(auto()) @map("_id") @db.ObjectId
     title       String
     description String?
     helps       String?

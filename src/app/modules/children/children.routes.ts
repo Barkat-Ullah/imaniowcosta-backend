@@ -8,7 +8,12 @@ import { fileUploader } from '../../utils/fileUploader';
 
 const router = express.Router();
 
-router.post('/', auth(UserRoleEnum.USER), childrenController.createChildren);
+router.post(
+  '/',
+  auth(UserRoleEnum.USER),
+  validateRequest.body(childrenValidation.createSchema),
+  childrenController.createChildren,
+);
 
 router.get(
   '/',

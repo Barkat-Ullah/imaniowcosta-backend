@@ -36,11 +36,12 @@ model User {
   roomSender   Room[] @relation("RoomSender")
   roomReceiver Room[] @relation("RoomReceiver")
 
-  sentChats         Chat[]            @relation("ChatSender")
-  receivedChats     Chat[]            @relation("ChatReceiver")
-  learningLibraries LearningLibrary[] @relation("BlogCreator")
-  favorites         favorite[]        @relation("UserCreator")
-  childrenS         Children[]        @relation("ChildrenCreator")
+  sentChats         Chat[]             @relation("ChatSender")
+  receivedChats     Chat[]             @relation("ChatReceiver")
+  learningLibraries LearningLibrary[]  @relation("BlogCreator")
+  favorites         favorite[]         @relation("UserCreator")
+  childrenS         Children[]         @relation("ChildrenCreator")
+  subscriptions     UserSubscription[] @relation("UserSubscriptions")
 
   //self relation
   createdById  String? @db.ObjectId

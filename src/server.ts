@@ -4,6 +4,7 @@ import config from './config';
 import { initiateSuperAdmin } from './app/db/db';
 
 // import { setupWebSocket } from './app/middlewares/webSocket';
+// import seedSubscriptions from './app/modules/subscription/seedSubscription';
 
 const port = config.port || 5000;
 
@@ -17,6 +18,7 @@ async function main() {
     // Seed data (await to ensure completion before listen)
     // console.log('🌱 Seeding super admin data...');
     await initiateSuperAdmin();
+    // await seedSubscriptions();
 
     console.log(`🚀 Starting server on port ${port}...`);
     server.listen(port, () => {

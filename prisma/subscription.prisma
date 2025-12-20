@@ -1,9 +1,11 @@
 model Subscription {
     id String @id @default(auto()) @map("_id") @db.ObjectId
 
-    title       String
-    description String
-    price       Float
+    title           String
+    description     String
+    originalPrice   Float
+    discountedPrice Float?
+    finalPrice      Float
 
     childCreation     Int?
     careGiverCreation Int?
@@ -25,7 +27,6 @@ model UserSubscription {
     id                 String    @id @default(auto()) @map("_id") @db.ObjectId
     subscriptionId     String    @db.ObjectId
     userId             String    @db.ObjectId
-    couponId           String?   @db.ObjectId
     originalPrice      Float
     discountedPrice    Float?
     finalPrice         Float
@@ -34,7 +35,7 @@ model UserSubscription {
     trialDaysRemaining Int?
 
     subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-    user         User         @relation("UserSubscriptions", fields: [userId], references: [id])
+    user         User         @relation("UserSubscriptions", fields: [userId], references: [id], onDelete: Cascade)
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

@@ -15,7 +15,7 @@ router.get(
 );
 router.get(
   '/me',
-  auth(UserRoleEnum.ADMIN, UserRoleEnum.USER),
+  auth(UserRoleEnum.ADMIN, UserRoleEnum.USER,UserRoleEnum.CARE_GIVER),
   UserControllers.getMyProfile,
 );
 router.get(

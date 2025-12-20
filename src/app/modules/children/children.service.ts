@@ -101,7 +101,13 @@ const getChildrenListIntoDb = async (
     where: { ...whereConditions, isDeleted: false },
     include: {
       user: {
-        select: { id: true, fullName: true, image: true, role: true },
+        select: {
+          id: true,
+          fullName: true,
+          image: true,
+          role: true,
+          relation: true,
+        },
       },
     },
     orderBy: { createdAt: 'desc' },
@@ -143,12 +149,17 @@ const getChildrenById = async (
   const result = await prisma.children.findUnique({
     where: { id, creatorId: parentId, isDeleted: false },
     include: {
-      childDocument: true,
-      providers: true,
-      healthCareNotes: true,
-      preferenceNotes: true,
+      // childDocument: true,
+      // providers: true,
+      // healthCareNotes: true,
+      // preferenceNotes: true,
       user: {
-        select: { id: true, fullName: true, image: true, role: true },
+        select: {
+          id: true,
+          fullName: true,
+          image: true,
+          relation: true,
+        },
       },
     },
   });

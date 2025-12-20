@@ -33,7 +33,8 @@ const getChildrenList = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Children list retrieved successfully',
-    data: result,
+    data: result.data,
+    meta: result.meta,
   });
 });
 
@@ -56,14 +57,14 @@ const getChildrenById = catchAsync(async (req: Request, res: Response) => {
 const updateChildren = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const payload = req.body.data ? JSON.parse(req.body.data) : req.body;
-  const image = req.file
+  const image = req.file;
   const userId = req.user.id;
   const userRole = req.user.role;
 
   const result = await childrenService.updateChildrenIntoDb(
     id,
     payload,
-    image ,
+    image,
     userId,
     userRole,
   );
@@ -77,11 +78,15 @@ const updateChildren = catchAsync(async (req: Request, res: Response) => {
 
 // delete Children
 const deleteChildren = catchAsync(async (req: Request, res: Response) => {
-const { id } = req.params;
-const userId = req.user.id;
-const userRole = req.user.role;
+  const { id } = req.params;
+  const userId = req.user.id;
+  const userRole = req.user.role;
 
-const result = await childrenService.deleteChildrenIntoDb(id, userId, userRole);
+  const result = await childrenService.deleteChildrenIntoDb(
+    id,
+    userId,
+    userRole,
+  );
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

@@ -6,6 +6,14 @@ import httpStatus from 'http-status';
 import { paginationHelper } from '../../utils/calculatePagination';
 
 const createFavorite = async (userId: string, articleId: string) => {
+  const article = await prisma.learningLibrary.findUnique({
+    where: {
+      id: articleId,
+    },
+  });
+  if (!article) {
+    throw new ApiError(404, 'Article not found');
+  }
   const existingFavorite = await prisma.favorite.findFirst({
     where: {
       userId,

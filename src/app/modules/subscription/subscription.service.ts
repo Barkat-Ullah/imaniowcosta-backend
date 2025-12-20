@@ -86,7 +86,7 @@ const getSubscriptionListIntoDb = async (options: IPaginationOptions, filters: I
     take: limit,
     where: whereConditions,
     orderBy: {
-      createdAt: "desc",
+      createdAt: "asc",
     }
   });
 

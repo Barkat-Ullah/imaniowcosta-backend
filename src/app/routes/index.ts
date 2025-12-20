@@ -11,6 +11,8 @@ import { inspireRoutes } from '../modules/inspire/inspire.routes';
 import { childrenRoutes } from '../modules/children/children.routes';
 import { childDocumentRoutes } from '../modules/childDocument/childDocument.routes';
 import { providerRoutes } from '../modules/provider/provider.routes';
+import { healthCareNoteRoutes } from '../modules/healthCareNote/healthCareNote.routes';
+import { preferenceSensoryNoteRoutes } from '../modules/preferenceSensoryNote/preferenceSensoryNote.routes';
 
 const router = express.Router();
 
@@ -50,6 +52,14 @@ const moduleRoutes = [
   {
     path: '/child-provider',
     route: providerRoutes,
+  },
+  {
+    path: '/child-healthcare',
+    route: healthCareNoteRoutes,
+  },
+  {
+    path: '/child-sensory',
+    route: preferenceSensoryNoteRoutes,
   },
   {
     path: '/payment',

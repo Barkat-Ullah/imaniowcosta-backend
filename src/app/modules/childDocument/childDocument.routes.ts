@@ -15,7 +15,7 @@ router.post(
     { name: 'image', maxCount: 1 },
     { name: 'video', maxCount: 1 },
     { name: 'pdf', maxCount: 1 },
-    { name: 'files', maxCount: 5 },
+    { name: 'files', maxCount: 1 },
   ]),
   childDocumentController.createChildDocument,
 );

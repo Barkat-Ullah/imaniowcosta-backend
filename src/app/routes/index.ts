@@ -13,6 +13,9 @@ import { childDocumentRoutes } from '../modules/childDocument/childDocument.rout
 import { providerRoutes } from '../modules/provider/provider.routes';
 import { healthCareNoteRoutes } from '../modules/healthCareNote/healthCareNote.routes';
 import { preferenceSensoryNoteRoutes } from '../modules/preferenceSensoryNote/preferenceSensoryNote.routes';
+import { MetaRoutes } from '../modules/meta/meta.routes';
+import { activityRoutes } from '../modules/activity/activity.routes';
+import { eventRoutes } from '../modules/event/event.routes';
 
 const router = express.Router();
 
@@ -42,6 +45,10 @@ const moduleRoutes = [
     route: inspireRoutes,
   },
   {
+    path: '/events',
+    route: eventRoutes,
+  },
+  {
     path: '/child',
     route: childrenRoutes,
   },
@@ -62,6 +69,10 @@ const moduleRoutes = [
     route: preferenceSensoryNoteRoutes,
   },
   {
+    path: '/activity-blog',
+    route: activityRoutes,
+  },
+  {
     path: '/payment',
     route: PaymentRoutes,
   },
@@ -72,6 +83,10 @@ const moduleRoutes = [
   {
     path: '/notifications',
     route: notificationsRoute,
+  },
+  {
+    path: '/meta',
+    route: MetaRoutes,
   },
 ];
 

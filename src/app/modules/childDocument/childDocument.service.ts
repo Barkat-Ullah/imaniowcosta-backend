@@ -11,9 +11,12 @@ import { fileUploader } from '../../utils/fileUploader';
 const createChildDocument = async (req: Request) => {
   const parsedData = req.body.data ? JSON.parse(req.body.data) : {};
   const childId = parsedData.childId;
-  const files = req.files as {
-    [fieldname: string]: Express.Multer.File[];
-  };
+
+  const files = req.files as
+    | {
+        [fieldname: string]: Express.Multer.File[];
+      }
+    | undefined;
 
   let uploadedFiles: {
     image?: string;
@@ -23,52 +26,49 @@ const createChildDocument = async (req: Request) => {
   } = {};
 
   try {
-    // Upload image to Cloudinary
-    if (files?.image && files.image[0]) {
-      const imageUpload = await fileUploader.uploadToCloudinary(files.image[0]);
-      uploadedFiles.image = imageUpload.Location;
+    // Image
+    if (files?.image?.[0]) {
+      const upload = await fileUploader.uploadToCloudinary(files.image[0]);
+      uploadedFiles.image = upload.Location; 
     }
 
-    // Upload video to Cloudinary
-    if (files?.video && files.video[0]) {
-      const videoUpload = await fileUploader.uploadToCloudinary(files.video[0]);
-      uploadedFiles.video = videoUpload.Location;
+    // Video
+    if (files?.video?.[0]) {
+      const upload = await fileUploader.uploadToCloudinary(files.video[0]);
+      uploadedFiles.video = upload.Location;
     }
 
-    // Upload PDF to Cloudinary
-    if (files?.pdf && files.pdf[0]) {
-      const pdfUpload = await fileUploader.uploadToCloudinary(files.pdf[0]);
-      uploadedFiles.pdf = pdfUpload.Location;
+    // PDF
+    if (files?.pdf?.[0]) {
+      const upload = await fileUploader.uploadToCloudinary(files.pdf[0]);
+      uploadedFiles.pdf = upload.Location;
     }
 
-    // Upload multiple files to Cloudinary
-    if (files?.files[0]) {
-      const filesUpload = await fileUploader.uploadToCloudinary(files.files[0]);
-      uploadedFiles.files = filesUpload.Location;
-      // Store as JSON string array
-      // uploadedFiles.files = JSON.stringify(
-      //   fileUploads.map((upload: { Location: any }) => upload.Location),
-      // );
+    // Single "files" field (you have maxCount: 1)
+    if (files?.files?.[0]) {
+      const upload = await fileUploader.uploadToCloudinary(files.files[0]);
+      uploadedFiles.files = upload.Location;
+      // If you want to support multiple files later, change maxCount and do:
+      // uploadedFiles.files = JSON.stringify(uploads.map(u => u.Location));
     }
-  } catch {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to upload file');
+  } catch (error: any) {
+    console.error('Cloudinary upload error:', error); // ← Log real error!
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to upload file', error);
   }
-  // Combine uploaded file URLs with request body data
+
+  // Create document
   const data = {
     childId,
     ...uploadedFiles,
   };
+
   const result = await prisma.childDocument.create({
     data,
-    include: {
-      child: {
-        select: { id: true, fullName: true },
-      },
-    },
+    include: { child: { select: { id: true, fullName: true } } },
   });
+
   return result;
 };
-
 // get all ChildDocument
 // type IChildDocumentFilterRequest = {
 //   searchTerm?: string;

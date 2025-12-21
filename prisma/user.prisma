@@ -42,6 +42,8 @@ model User {
   favorites         favorite[]         @relation("UserCreator")
   childrenS         Children[]         @relation("ChildrenCreator")
   subscriptions     UserSubscription[] @relation("UserSubscriptions")
+  activities        Activity[]         @relation("ActivityCreator")
+  events            Event[]            @relation("EventCreator")
 
   //self relation
   createdById  String? @db.ObjectId

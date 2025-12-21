@@ -149,12 +149,25 @@ const getLearningLibraryListIntoDb = async (
 
 // get LearningLibrary by id
 const getLearningLibraryById = async (id: string) => {
+  //  const cacheKey = CACHE_KEYS.POST_BY_ID(id);
+
+  //  const cached = cache.get(cacheKey);
+  //  if (cached) {
+  //    console.log(`✅ Cache HIT: Post ${id}`);
+  //    return cached;
+  //  }
+
+  //  console.log(`❌ Cache MISS: Post ${id} - Fetching from database`);
+
   const result = await prisma.learningLibrary.findUnique({
     where: { id },
   });
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, 'LearningLibrary not found');
   }
+  // Invalidate specific post cache only
+  // cache.del(CACHE_KEYS.POST_BY_ID(id));
+  // console.log(`🗑️  Cache invalidated: Post ${id}`);
   return result;
 };
 
@@ -174,6 +187,10 @@ const updateLearningLibraryIntoDb = async (id: string, req: Request) => {
     where: { id },
     data: addedData,
   });
+
+  // Invalidate specific post cache only
+  // cache.del(CACHE_KEYS.POST_BY_ID(id));
+  // console.log(`🗑️  Cache invalidated: Post ${id}`);
   return result;
 };
 
@@ -191,9 +208,17 @@ const deleteLearningLibraryIntoDb = async (id: string, userId: string) => {
     throw new ApiError(httpStatus.FORBIDDEN, 'You are not authorized');
   }
 
-  return await prisma.learningLibrary.delete({
+  const result = await prisma.learningLibrary.delete({
     where: { id },
   });
+
+  // // Invalidate specific post cache
+  // cache.del(CACHE_KEYS.POST_BY_ID(id));
+
+  // // Invalidate ALL posts list caches
+  // invalidateAllPostsCaches();
+
+  return result;
 };
 
 export const learningLibraryService = {

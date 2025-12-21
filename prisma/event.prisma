@@ -1,0 +1,86 @@
+model Event {
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+
+    // Basic Event Info
+    title       String
+    description String?
+
+    // Date and Time
+    eventDate DateTime
+    startTime String? // Format: "HH:mm" (e.g., "09:00")
+    endTime   String? // Format: "HH:mm" (e.g., "10:00")
+    duration  Int? // Duration in minutes
+    category  EventCategory
+    location  String?
+
+    daysPWeek Int? // 1, 2, 3
+    days      String? // sun, mon, wed
+    weeks     String? // 1week, 2week
+
+    reminderTime Int? // Minutes before event (15, 30, 60, etc.)
+
+    repeatType    RepeatType @default(None)
+    repeatEndDate DateTime?
+
+    // Notes and Files
+    notes         String?
+    image         String?
+    attachmentUrl String?
+
+    // Completion Tracking
+    status EventStatus @default(Pending)
+
+    //child assign
+    isForAllChild Boolean    @default(false)
+    childIds      String[]   @db.ObjectId
+    children      Children[] @relation(fields: [childIds], references: [id])
+
+    // Soft Delete
+    isDeleted Boolean @default(false)
+
+    // Creator
+    userId String @db.ObjectId
+    user   User   @relation("EventCreator", fields: [userId], references: [id])
+
+    providerId String?   @db.ObjectId
+    provider   Provider? @relation(fields: [providerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("events")
+}
+
+enum EventStatus {
+    Pending
+    Completed
+}
+
+enum EventCategory {
+    Speech_Therapy
+    Occupational_Therapy
+    Physical_Therapy
+    ABA_Therapy
+    School_Drop_Off
+    School_Pick_Up
+    Medical_Appointment
+    Dentist_Appointment
+    Counseling_Session
+    Social_Skills_Group
+    Sensory_Play_Time
+    Learning_Activity
+    Outdoor_Activity
+    Meal_Time
+    Medication_Reminder
+    Personal_Care
+    Family_Event
+    Play_date
+    Other
+}
+
+enum RepeatType {
+    None
+    Daily
+    Weekly
+    Custom
+}

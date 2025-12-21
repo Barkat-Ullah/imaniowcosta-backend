@@ -1,0 +1,34 @@
+//* log activity
+model Activity {
+    id          String         @id @default(auto()) @map("_id") @db.ObjectId
+    title       String
+    description String
+    stage       StageEnum
+    activity    ActivitiesEnum
+    skill       String[]
+    image       String?
+    link        String?
+    date        DateTime?
+
+    userId    String?  @db.ObjectId
+    user      User?    @relation("ActivityCreator", fields: [userId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("activity")
+}
+
+enum StageEnum {
+    Early
+    Emerging
+    Growing
+}
+
+enum ActivitiesEnum {
+    Communication
+    Daily_Routines
+    Calm_And_Explorer
+    Move_and_Play
+    Learning_and_skills
+}
+//* log behavior and food

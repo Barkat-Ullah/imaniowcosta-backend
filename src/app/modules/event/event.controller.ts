@@ -7,7 +7,6 @@ import { eventService } from './event.service';
 
 // create Event
 const createEvent = catchAsync(async (req: Request, res: Response) => {
-
   const result = await eventService.createEvent(req);
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
@@ -18,16 +17,32 @@ const createEvent = catchAsync(async (req: Request, res: Response) => {
 });
 
 // get all Event
-const eventFilterableFields = ['searchTerm', 'id', 'createdAt', 'status'];
+const eventFilterableFields = [
+  'searchTerm',
+  'id',
+  'createdAt',
+  'status',
+  'date',
+  'childId',
+];
+
 const getEventList = catchAsync(async (req: Request, res: Response) => {
   const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
   const filters = pick(req.query, eventFilterableFields);
-  const result = await eventService.getEventListIntoDb(options, filters);
+  const userId = req.user.id;
+  const result =
+    await eventService.getEventListForAllChildOrSingleChildByDateIntoDb(
+      options,
+      filters,
+      userId,
+    );
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Event list retrieved successfully',
-    data: result,
+    message: 'Events retrieved successfully for the child',
+    meta: result.meta,
+    data: result.data,
   });
 });
 
@@ -45,13 +60,20 @@ const getEventById = catchAsync(async (req: Request, res: Response) => {
 
 // update Event
 const updateEvent = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const data = req.body;
-  const result = await eventService.updateEventIntoDb(id, data);
+  const result = await eventService.updateEventIntoDb(req);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Event updated successfully',
+    data: result,
+  });
+});
+const markAsCompleted = catchAsync(async (req: Request, res: Response) => {
+  const result = await eventService.updateEventStatus(req);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Event status updated successfully',
     data: result,
   });
 });
@@ -73,5 +95,6 @@ export const eventController = {
   getEventList,
   getEventById,
   updateEvent,
+  markAsCompleted,
   deleteEvent,
 };

@@ -23,7 +23,17 @@ router.get(
 
 router.get('/:id', auth(), eventController.getEventById);
 
-router.put('/:id', auth(), eventController.updateEvent);
+router.put(
+  '/:id',
+  auth(),
+  fileUploader.uploadSingle,
+  eventController.updateEvent,
+);
+router.patch(
+  '/:id',
+  auth(),
+  eventController.markAsCompleted,
+);
 
 router.delete('/:id', auth(), eventController.deleteEvent);
 

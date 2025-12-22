@@ -19,6 +19,7 @@ model Children {
     providers       Provider[]
     healthCareNotes HealthCareNote[]
     preferenceNotes PreferenceSensoryNote[]
+    behaviorLog     BehaviorLog[]
 
     // Relation
     creatorId String @db.ObjectId

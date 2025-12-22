@@ -1,5 +1,5 @@
 // children.service.ts
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRoleEnum } from '@prisma/client';
 import { IPaginationOptions } from '../../interface/pagination.type';
 import { prisma } from '../../utils/prisma';
 import ApiError from '../../errors/AppError';
@@ -44,7 +44,7 @@ const getChildrenListIntoDb = async (
 
   const andConditions: Prisma.ChildrenWhereInput[] = [];
 
-  if (userRole === 'CARE_GIVER') {
+  if (userRole === UserRoleEnum.CARE_GIVER) {
     const managedParents = await prisma.user.findUnique({
       where: { id: userId },
       select: {

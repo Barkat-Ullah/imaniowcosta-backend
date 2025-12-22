@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { EventStatus, Prisma, UserRoleEnum } from '@prisma/client';
 import { IPaginationOptions } from '../../interface/pagination.type';
 import { prisma } from '../../utils/prisma';
 import ApiError from '../../errors/AppError';
@@ -18,13 +18,41 @@ const createEvent = async (req: Request) => {
     image = (await fileUploader.uploadToCloudinary(file)).Location;
   }
 
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      role: true,
+    },
+  });
+
+  let accessId;
+  if (user?.role === UserRoleEnum.CARE_GIVER) {
+    const managedParents = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        createdBy: {
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!managedParents?.createdBy) {
+      throw new ApiError(httpStatus.FORBIDDEN, 'No access to any children');
+    }
+    accessId = managedParents.createdBy.id;
+  } else {
+    accessId = userId;
+  }
+
   let finalChildIds: string[] = [];
 
   // 1. Determine which children to attach to the event
   if (payload.isForAllChild) {
     const myChildren = await prisma.children.findMany({
       where: {
-        creatorId: userId,
+        creatorId: accessId,
         isDeleted: false,
       },
       select: { id: true },
@@ -48,6 +76,25 @@ const createEvent = async (req: Request) => {
     finalChildIds = [payload.selectedChildId];
   }
 
+  const existingChildren = await prisma.children.findMany({
+    where: {
+      id: { in: finalChildIds },
+      isDeleted: false,
+      creatorId: accessId,
+    },
+    select: { id: true },
+  });
+
+  const existingIds = existingChildren.map(c => c.id);
+  const invalidIds = finalChildIds.filter(id => !existingIds.includes(id));
+
+  if (invalidIds.length > 0) {
+    throw new ApiError(
+      404,
+      `Invalid child IDs: ${invalidIds.join(', ')}. These children do not exist or belong to another user.`,
+    );
+  }
+
   // 2. Create the Event and establish relations
   const result = await prisma.event.create({
     data: {
@@ -69,7 +116,7 @@ const createEvent = async (req: Request) => {
       isForAllChild: payload.isForAllChild || false,
 
       // Foreign Key references
-      userId: userId,
+      userId: accessId,
       providerId: payload.providerId || null,
 
       // Many-to-Many Connection
@@ -101,14 +148,86 @@ type IEventFilterRequest = {
 };
 const eventSearchAbleFields = ['title'];
 
-const getEventListIntoDb = async (
+const getEventListForAllChildOrSingleChildByDateIntoDb = async (
   options: IPaginationOptions,
-  filters: IEventFilterRequest,
+  filters: {
+    date?: string;
+    childId?: string;
+    searchTerm?: string;
+    status?: string;
+  },
+  userId: string,
 ) => {
   const { page, limit, skip } = paginationHelper.calculatePagination(options);
-  const { searchTerm, ...filterData } = filters;
+  const { date, childId, searchTerm, ...filterData } = filters;
+
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+      isDeleted: false,
+    },
+    select: {
+      role: true,
+    },
+  });
 
   const andConditions: Prisma.EventWhereInput[] = [];
+
+  if (user?.role === UserRoleEnum.CARE_GIVER) {
+    const managedParents = await prisma.user.findUnique({
+      where: { id: userId, isDeleted: false },
+      select: {
+        createdBy: {
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!managedParents?.createdBy) {
+      throw new ApiError(httpStatus.FORBIDDEN, 'No access to any children');
+    }
+
+    andConditions.push({
+      userId: managedParents.createdBy.id,
+    });
+  } else {
+    andConditions.push({ userId: userId });
+  }
+
+  andConditions.push({
+    isDeleted: false,
+  });
+
+  if (date) {
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(date);
+    end.setHours(23, 59, 59, 999);
+
+    andConditions.push({
+      eventDate: {
+        gte: start,
+        lte: end,
+      },
+    });
+  } else {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(today);
+    endOfDay.setHours(23, 59, 59, 999);
+    andConditions.push({
+      eventDate: {
+        gte: today,
+        lte: endOfDay,
+      },
+    });
+  }
+
+  if (childId) {
+    andConditions.push({
+      OR: [{ isForAllChild: true }, { childIds: { has: childId } }],
+    });
+  }
 
   if (searchTerm) {
     andConditions.push({
@@ -164,13 +283,24 @@ const getEventListIntoDb = async (
 
   const whereConditions: Prisma.EventWhereInput =
     andConditions.length > 0 ? { AND: andConditions } : {};
-
   const result = await prisma.event.findMany({
     skip,
     take: limit,
     where: whereConditions,
-    orderBy: {
-      createdAt: 'desc',
+    orderBy: { eventDate: 'asc' },
+    include: {
+      children: {
+        select: { id: true, fullName: true, image: true },
+      },
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          image: true,
+          role: true,
+          relation: true,
+        },
+      },
     },
   });
 
@@ -210,10 +340,47 @@ const getEventById = async (id: string) => {
 };
 
 // update Event
-const updateEventIntoDb = async (id: string, data: any) => {
+const updateEventIntoDb = async (req: Request) => {
+  const id = req.params.id;
+  const payload = req.body.data ? JSON.parse(req.body.data) : {};
+  const file = req.file;
+  let image;
+
+  if (file) {
+    image = (await fileUploader.uploadToCloudinary(file)).Location;
+  }
+
+  const updateData: any = { ...payload };
+
+  if (payload.eventDate) {
+    updateData.eventDate = new Date(payload.eventDate);
+  }
+
+  if (image) {
+    updateData.image = image;
+  }
+
+  if (payload.repeatEndDate) {
+    updateData.repeatEndDate = new Date(payload.repeatEndDate);
+  }
+
   const result = await prisma.event.update({
     where: { id },
-    data,
+    data: updateData,
+  });
+
+  return result;
+};
+
+const updateEventStatus = async (req: Request) => {
+  const id = req.params.id;
+  const result = await prisma.event.update({
+    where: {
+      id,
+    },
+    data: {
+      status: EventStatus.Completed,
+    },
   });
   return result;
 };
@@ -229,8 +396,9 @@ const deleteEventIntoDb = async (id: string) => {
 
 export const eventService = {
   createEvent,
-  getEventListIntoDb,
+  getEventListForAllChildOrSingleChildByDateIntoDb,
   getEventById,
   updateEventIntoDb,
   deleteEventIntoDb,
+  updateEventStatus,
 };

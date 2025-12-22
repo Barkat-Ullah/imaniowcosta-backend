@@ -130,9 +130,12 @@ const getChildrenById = async (
   userId: string,
   userRole: string,
 ) => {
-  let parentId: string;
+  let whereClause: any = {
+    id,
+    isDeleted: false,
+  };
 
-  if (userRole === 'CARE_GIVER') {
+  if (userRole === UserRoleEnum.CARE_GIVER) {
     const caregiver = await prisma.user.findUnique({
       where: { id: userId },
       select: { createdBy: { select: { id: true } } },
@@ -141,18 +144,17 @@ const getChildrenById = async (
     if (!caregiver?.createdBy) {
       throw new ApiError(httpStatus.FORBIDDEN, 'Access denied');
     }
-    parentId = caregiver.createdBy.id;
+
+    whereClause.creatorId = caregiver.createdBy.id;
+  } else if (userRole === UserRoleEnum.ADMIN) {
+    console.log('Admin accessing child ID:', id);
   } else {
-    parentId = userId;
+    whereClause.creatorId = userId;
   }
 
   const result = await prisma.children.findUnique({
-    where: { id, creatorId: parentId, isDeleted: false },
+    where: whereClause,
     include: {
-      // childDocument: true,
-      // providers: true,
-      // healthCareNotes: true,
-      // preferenceNotes: true,
       user: {
         select: {
           id: true,

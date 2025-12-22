@@ -130,6 +130,7 @@ const getMyProfileFromDB = async (id: string) => {
       status: true,
       createdAt: true,
       updatedAt: true,
+      
     },
   });
   return user;
@@ -138,7 +139,7 @@ const getMyProfileFromDB = async (id: string) => {
 const getMyCareGiverFromDB = async (id: string) => {
   const careGiver = await prisma.user.findMany({
     where: {
-      createdById:id,
+      createdById: id,
     },
     // select: {
     //   id: true,
@@ -191,6 +192,12 @@ const getUserDetailsFromDB = async (id: string) => {
       status: true,
       createdAt: true,
       updatedAt: true,
+      childrenS: true,
+      _count: {
+        select: {
+          childrenS: true,
+        },
+      },
     },
   });
   return user;

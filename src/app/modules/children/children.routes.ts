@@ -8,13 +8,6 @@ import { fileUploader } from '../../utils/fileUploader';
 
 const router = express.Router();
 
-router.post(
-  '/',
-  auth(UserRoleEnum.USER),
-  validateRequest.body(childrenValidation.createSchema),
-  childrenController.createChildren,
-);
-
 router.get(
   '/',
   auth(UserRoleEnum.USER, UserRoleEnum.CARE_GIVER),
@@ -23,8 +16,15 @@ router.get(
 
 router.get(
   '/:id',
-  auth(UserRoleEnum.USER, UserRoleEnum.CARE_GIVER),
+  auth(UserRoleEnum.USER, UserRoleEnum.CARE_GIVER, UserRoleEnum.ADMIN),
   childrenController.getChildrenById,
+);
+
+router.post(
+  '/',
+  auth(UserRoleEnum.USER),
+  validateRequest.body(childrenValidation.createSchema),
+  childrenController.createChildren,
 );
 
 router.put(

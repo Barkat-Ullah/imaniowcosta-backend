@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRoleEnum } from '@prisma/client';
 import httpStatus from 'http-status';
 import ApiError from '../../errors/AppError';
 
@@ -8,17 +8,49 @@ interface IBehaviorLogUpdateInput {
   selectedBehaviors: string[];
 }
 
-const updateBehaviorLogWithUpsert = async (data: IBehaviorLogUpdateInput, userId: string) => {
+const updateBehaviorLogWithUpsert = async (
+  data: IBehaviorLogUpdateInput,
+  userId: string,
+) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      role: true,
+    },
+  });
+  let accessId;
+  if (user?.role === UserRoleEnum.CARE_GIVER) {
+    const managedParents = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        createdBy: {
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!managedParents?.createdBy) {
+      throw new ApiError(httpStatus.FORBIDDEN, 'No access to any children');
+    }
+    accessId = managedParents.createdBy.id;
+  } else {
+    accessId = userId;
+  }
   const child = await prisma.children.findFirst({
     where: {
       id: data.childId,
-      creatorId: userId,
+      creatorId: accessId,
       isDeleted: false,
     },
   });
 
   if (!child) {
-    throw new ApiError(httpStatus.FORBIDDEN, 'You do not have access to this child');
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      'You do not have access to this child',
+    );
   }
 
   const existing = await prisma.behaviorLog.findUnique({
@@ -47,8 +79,34 @@ const updateBehaviorLogWithUpsert = async (data: IBehaviorLogUpdateInput, userId
 };
 
 const getBehaviorLogByChild = async (childId: string, userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      role: true,
+    },
+  });
+  let accessId;
+  if (user?.role === UserRoleEnum.CARE_GIVER) {
+    const managedParents = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        createdBy: {
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!managedParents?.createdBy) {
+      throw new ApiError(httpStatus.FORBIDDEN, 'No access to any children');
+    }
+    accessId = managedParents.createdBy.id;
+  } else {
+    accessId = userId;
+  }
   const child = await prisma.children.findFirst({
-    where: { id: childId, creatorId: userId, isDeleted: false },
+    where: { id: childId, creatorId: accessId, isDeleted: false },
   });
 
   if (!child) throw new ApiError(httpStatus.FORBIDDEN, 'Access denied');

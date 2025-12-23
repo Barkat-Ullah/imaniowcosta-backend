@@ -57,8 +57,8 @@ const auth = <T extends readonly (UserRoleEnum | 'ANY')[]>(
         throw new AppError(httpStatus.UNAUTHORIZED, 'You are suspended!');
       }
 
-      if (user?.profile) {
-        verifyUserToken.profile = user?.profile;
+      if (user?.image) {
+        verifyUserToken.image = user?.image;
       }
 
       req.user = verifyUserToken;

@@ -18,27 +18,6 @@ export const createNotification = async (params: CreateNotificationParams) => {
       body,
       isRead: false,
     },
-    include: {
-      sender: {
-        select: {
-          id: true,
-          email: true,
-          role: true,
-          founder: {
-            select: {
-              fullName: true,
-              profile: true,
-            },
-          },
-          seeder: {
-            select: {
-              fullName: true,
-              profile: true,
-            },
-          },
-        },
-      },
-    },
   });
 
   return notification;

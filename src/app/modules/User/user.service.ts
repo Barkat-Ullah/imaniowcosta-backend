@@ -327,7 +327,7 @@ const updateUserIntoDb = async (req: Request, id: string) => {
   }
 
   // Step 2️⃣: Parse incoming data
-  const { fullName, describe, city, address, phoneNumber } = JSON.parse(
+  const { fullName, city, address, phoneNumber } = JSON.parse(
     req.body.data,
   );
 
@@ -346,9 +346,6 @@ const updateUserIntoDb = async (req: Request, id: string) => {
     where: { id },
     data: {
       fullName,
-      // businessType,
-      describe,
-      city,
       address,
       phoneNumber,
       image: imageUrl,
@@ -359,9 +356,6 @@ const updateUserIntoDb = async (req: Request, id: string) => {
       email: true,
       image: true,
       role: true,
-      // businessType: true,
-      describe: true,
-      city: true,
       address: true,
       status: true,
     },

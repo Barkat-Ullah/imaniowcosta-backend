@@ -6,7 +6,6 @@ import httpStatus from 'http-status';
 import { paginationHelper } from '../../utils/calculatePagination';
 import { Request } from 'express';
 import { fileUploader } from '../../utils/fileUploader';
-// import { cache, CACHE_KEYS, invalidateAllPostsCaches } from './cache.constant';
 
 // create LearningLibrary
 const createLearningLibrary = async (req: Request) => {
@@ -21,7 +20,6 @@ const createLearningLibrary = async (req: Request) => {
 
   const addedData = { ...data, image, createdId };
   const result = await prisma.learningLibrary.create({ data: addedData });
-  // invalidateAllPostsCaches();
   return result;
 };
 
@@ -41,16 +39,6 @@ const getLearningLibraryListIntoDb = async (
 ) => {
   const { page, limit, skip } = paginationHelper.calculatePagination(options);
   const { searchTerm, ...filterData } = filters;
-
-  //  const cached = cache.get(CACHE_KEYS);
-  //  if (cached) {
-  //    console.log(`✅ Cache HIT: getAllPost (${cacheKey})`);
-  //    return cached;
-  //  }
-
-  //  console.log(
-  //    `❌ Cache MISS: getAllPost (${cacheKey}) - Fetching from database`,
-  //  );
 
   const andConditions: Prisma.LearningLibraryWhereInput[] = [];
 
@@ -149,15 +137,6 @@ const getLearningLibraryListIntoDb = async (
 
 // get LearningLibrary by id
 const getLearningLibraryById = async (id: string) => {
-  //  const cacheKey = CACHE_KEYS.POST_BY_ID(id);
-
-  //  const cached = cache.get(cacheKey);
-  //  if (cached) {
-  //    console.log(`✅ Cache HIT: Post ${id}`);
-  //    return cached;
-  //  }
-
-  //  console.log(`❌ Cache MISS: Post ${id} - Fetching from database`);
 
   const result = await prisma.learningLibrary.findUnique({
     where: { id },
@@ -165,9 +144,6 @@ const getLearningLibraryById = async (id: string) => {
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, 'LearningLibrary not found');
   }
-  // Invalidate specific post cache only
-  // cache.del(CACHE_KEYS.POST_BY_ID(id));
-  // console.log(`🗑️  Cache invalidated: Post ${id}`);
   return result;
 };
 
@@ -188,9 +164,6 @@ const updateLearningLibraryIntoDb = async (id: string, req: Request) => {
     data: addedData,
   });
 
-  // Invalidate specific post cache only
-  // cache.del(CACHE_KEYS.POST_BY_ID(id));
-  // console.log(`🗑️  Cache invalidated: Post ${id}`);
   return result;
 };
 
@@ -211,12 +184,6 @@ const deleteLearningLibraryIntoDb = async (id: string, userId: string) => {
   const result = await prisma.learningLibrary.delete({
     where: { id },
   });
-
-  // // Invalidate specific post cache
-  // cache.del(CACHE_KEYS.POST_BY_ID(id));
-
-  // // Invalidate ALL posts list caches
-  // invalidateAllPostsCaches();
 
   return result;
 };

@@ -1,4 +1,3 @@
-
 import express, { Application, NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
 import rateLimit from 'express-rate-limit';
@@ -10,14 +9,16 @@ import AppError from '../app/errors/AppError';
 import { prisma } from '../app/utils/prisma';
 import { fileUploader } from '../app/utils/fileUploader';
 
-
-
-
 export const setupMiddlewares = (app: Application): void => {
   // CORS
   app.use(
     cors({
-      origin: ['http://localhost:3001', 'http://localhost:3000'],
+      origin: [
+        'https://imanidacosta-dashboard.vercel.app',
+        'http://localhost:3001',
+        'http://localhost:3000',
+      ],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: [
         'Content-Type',
         'Authorization',

@@ -1,4 +1,9 @@
-import { EventStatus, Prisma, UserRoleEnum } from '@prisma/client';
+import {
+  EventStatus,
+  Prisma,
+  ProviderStatus,
+  UserRoleEnum,
+} from '@prisma/client';
 import { IPaginationOptions } from '../../interface/pagination.type';
 import { prisma } from '../../utils/prisma';
 import ApiError from '../../errors/AppError';
@@ -135,6 +140,19 @@ const createEvent = async (req: Request) => {
       },
     },
   });
+
+  //* update provider status in coming to up coming
+
+  if (result.providerId) {
+    await prisma.provider.update({
+      where: {
+        id: result.providerId as string,
+      },
+      data: {
+        status: ProviderStatus.Upcoming,
+      },
+    });
+  }
 
   return result;
 };
@@ -290,7 +308,16 @@ const getEventListForAllChildOrSingleChildByDateIntoDb = async (
     orderBy: { eventDate: 'asc' },
     include: {
       children: {
-        select: { id: true, fullName: true, image: true },
+        select: {
+          id: true,
+          fullName: true,
+          image: true,
+          // providers: {
+          //   select: {
+          //     status: true,
+          //   },
+          // },
+        },
       },
       user: {
         select: {

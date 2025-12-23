@@ -1,8 +1,6 @@
 import express from 'express';
 import auth from '../../middlewares/auth';
-import validateRequest from '../../middlewares/validateRequest';
 import { eventController } from './event.controller';
-import { eventValidation } from './event.validation';
 import { UserRoleEnum } from '@prisma/client';
 import { fileUploader } from '../../utils/fileUploader';
 

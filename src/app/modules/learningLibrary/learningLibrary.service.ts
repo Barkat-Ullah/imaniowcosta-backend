@@ -6,6 +6,12 @@ import httpStatus from 'http-status';
 import { paginationHelper } from '../../utils/calculatePagination';
 import { Request } from 'express';
 import { fileUploader } from '../../utils/fileUploader';
+import { CACHE_CONFIG, CacheKeyGenerator, CacheManager, withCache } from '../../utils/cache/cacheManager';
+
+
+// Cache prefix for learning library
+const CACHE_PREFIX = CACHE_CONFIG.LEARNING_LIBRARY.prefix;
+const CACHE_TTL = CACHE_CONFIG.LEARNING_LIBRARY.ttl;
 
 // create LearningLibrary
 const createLearningLibrary = async (req: Request) => {
@@ -20,6 +26,10 @@ const createLearningLibrary = async (req: Request) => {
 
   const addedData = { ...data, image, createdId };
   const result = await prisma.learningLibrary.create({ data: addedData });
+
+  // Invalidate all learning library list caches
+  CacheManager.invalidateByPrefix(CACHE_PREFIX);
+  console.log('✅ Learning Library created - All list caches invalidated');
   return result;
 };
 
@@ -39,6 +49,21 @@ const getLearningLibraryListIntoDb = async (
 ) => {
   const { page, limit, skip } = paginationHelper.calculatePagination(options);
   const { searchTerm, ...filterData } = filters;
+
+  // Generate cache key based on all parameters
+  const cacheKey = CacheKeyGenerator.list(CACHE_PREFIX, {
+    userId,
+    page,
+    limit,
+    searchTerm,
+    ...filterData,
+  });
+
+  // Try to get from cache
+  const cached = CacheManager.get<any>(cacheKey);
+  if (cached) {
+    return cached;
+  }
 
   const andConditions: Prisma.LearningLibraryWhereInput[] = [];
 
@@ -125,28 +150,38 @@ const getLearningLibraryListIntoDb = async (
     isFavorite: favoriteArticleIds.has(article.id),
   }));
 
-  return {
-    meta: {
-      total,
-      page,
-      limit,
-    },
+  const response = {
+    meta: { total, page, limit },
     data: formattedData,
   };
+
+  // Store in cache
+  CacheManager.set(cacheKey, response, CACHE_TTL);
+
+  return response;
 };
 
 // get LearningLibrary by id
 const getLearningLibraryById = async (id: string) => {
+  const cacheKey = CacheKeyGenerator.byId(CACHE_PREFIX, id);
 
-  const result = await prisma.learningLibrary.findUnique({
-    where: { id },
-  });
-  if (!result) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'LearningLibrary not found');
-  }
-  return result;
+  // Use withCache helper
+  return withCache(
+    cacheKey,
+    async () => {
+      const result = await prisma.learningLibrary.findUnique({
+        where: { id },
+      });
+
+      if (!result) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'LearningLibrary not found');
+      }
+
+      return result;
+    },
+    CACHE_TTL,
+  );
 };
-
 // update LearningLibrary
 const updateLearningLibraryIntoDb = async (id: string, req: Request) => {
   const createdId = req.user.id;
@@ -163,6 +198,14 @@ const updateLearningLibraryIntoDb = async (id: string, req: Request) => {
     where: { id },
     data: addedData,
   });
+
+  // Invalidate specific item cache
+  const itemCacheKey = CacheKeyGenerator.byId(CACHE_PREFIX, id);
+  CacheManager.delete(itemCacheKey);
+
+  // Invalidate all list caches for this section
+  CacheManager.invalidateByPrefix(CACHE_PREFIX);
+  console.log(`✅ Learning Library ${id} updated - Caches invalidated`);
 
   return result;
 };
@@ -184,6 +227,14 @@ const deleteLearningLibraryIntoDb = async (id: string, userId: string) => {
   const result = await prisma.learningLibrary.delete({
     where: { id },
   });
+
+  // Invalidate specific item cache
+  const itemCacheKey = CacheKeyGenerator.byId(CACHE_PREFIX, id);
+  CacheManager.delete(itemCacheKey);
+
+  // Invalidate all list caches
+  CacheManager.invalidateByPrefix(CACHE_PREFIX);
+  console.log(`✅ Learning Library ${id} deleted - Caches invalidated`);
 
   return result;
 };

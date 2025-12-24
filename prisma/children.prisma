@@ -75,15 +75,4 @@ enum ToiletingStatus {
     Not_Able_To_Be_Potty_Trained
 }
 
-// enum ChildDiagnosis {
-//     Autism
-//     Down_Syndrome
-//     ADHD
-//     Cerebral_Palsy
-//     Deaf_Or_Hard_Of_Hearing
-//     Blind_Or_Low_Vision
-//     Chromosomal_Deletion_Duplication
-//     Currently_Waiting_Evaluation
-//     No_Diagnosis_Yet
-//     Other
-// }
+

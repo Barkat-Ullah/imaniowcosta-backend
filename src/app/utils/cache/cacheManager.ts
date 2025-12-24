@@ -9,6 +9,7 @@ export const cache = new NodeCache({
   maxKeys: 10000, // Increased for larger applications
 });
 
+
 // Cache configuration for different sections
 export const CACHE_CONFIG = {
   LEARNING_LIBRARY: {

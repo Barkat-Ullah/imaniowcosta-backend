@@ -28,31 +28,50 @@ const createChildDocument = async (req: Request) => {
   try {
     // Image
     if (files?.image?.[0]) {
-      const upload = await fileUploader.uploadToCloudinary(files.image[0]);
-      uploadedFiles.image = upload.Location; 
+      const upload = await fileUploader.uploadToCloudinaryWithType(
+        files.image[0],
+        'image',
+      );
+      uploadedFiles.image = upload.Location;
     }
 
-    // Video
+    // Video Upload
     if (files?.video?.[0]) {
-      const upload = await fileUploader.uploadToCloudinary(files.video[0]);
+      const upload = await fileUploader.uploadToCloudinaryWithType(
+        files.video[0],
+        'video',
+      );
       uploadedFiles.video = upload.Location;
     }
 
-    // PDF
+    // PDF Upload
     if (files?.pdf?.[0]) {
-      const upload = await fileUploader.uploadToCloudinary(files.pdf[0]);
+      const upload = await fileUploader.uploadToCloudinaryWithType(
+        files.pdf[0],
+        'pdf',
+      );
       uploadedFiles.pdf = upload.Location;
     }
 
-    // Single "files" field (you have maxCount: 1)
     if (files?.files?.[0]) {
-      const upload = await fileUploader.uploadToCloudinary(files.files[0]);
+      const file = files.files[0];
+      const ext = file.originalname.split('.').pop()?.toLowerCase();
+
+      let fileType: 'image' | 'video' | 'pdf' = 'pdf'; // default
+      if (['jpg', 'jpeg', 'png', 'webp'].includes(ext || '')) {
+        fileType = 'image';
+      } else if (['mp4', 'mov', 'avi', 'webm'].includes(ext || '')) {
+        fileType = 'video';
+      }
+
+      const upload = await fileUploader.uploadToCloudinaryWithType(
+        file,
+        fileType,
+      );
       uploadedFiles.files = upload.Location;
-      // If you want to support multiple files later, change maxCount and do:
-      // uploadedFiles.files = JSON.stringify(uploads.map(u => u.Location));
     }
   } catch (error: any) {
-    console.error('Cloudinary upload error:', error); // ← Log real error!
+    console.error('Cloudinary upload error:', error);
     throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to upload file', error);
   }
 

@@ -59,12 +59,14 @@ model User {
 model LearningLibrary {
   id            String       @id @default(auto()) @map("_id") @db.ObjectId
   title         String
+  subTitle         String
   description   String
   category      EnumCategory
   content       EnumContent
   tags          String[]
   estimatedTime String
   image         String?
+  pdf           String?
   content_url   String?
 
   createdId String     @db.ObjectId

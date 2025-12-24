@@ -66,7 +66,7 @@ router.put(
 
 router.put(
   '/update-profile',
-  auth(UserRoleEnum.ADMIN, UserRoleEnum.USER),
+  auth(UserRoleEnum.ADMIN, UserRoleEnum.USER, UserRoleEnum.CARE_GIVER),
   fileUploader.uploadSingle, // "image"
   UserControllers.updateMyProfile,
 );

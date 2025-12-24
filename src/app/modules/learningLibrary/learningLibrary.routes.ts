@@ -11,20 +11,23 @@ const router = express.Router();
 router.post(
   '/',
   auth(UserRoleEnum.ADMIN),
-  fileUploader.uploadSingle,
+  fileUploader.upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'pdf', maxCount: 1 },
+  ]),
   validateRequest.body(learningLibraryValidation.createSchema),
   learningLibraryController.createLearningLibrary,
 );
 
 router.get(
   '/',
-  auth(UserRoleEnum.ADMIN, UserRoleEnum.USER),
+  auth(UserRoleEnum.ADMIN, UserRoleEnum.USER, UserRoleEnum.CARE_GIVER),
   learningLibraryController.getLearningLibraryList,
 );
 
 router.get(
   '/:id',
-  auth(UserRoleEnum.ADMIN, UserRoleEnum.USER),
+  auth(UserRoleEnum.ADMIN, UserRoleEnum.USER, UserRoleEnum.CARE_GIVER),
   learningLibraryController.getLearningLibraryById,
 );
 

@@ -230,7 +230,7 @@ const uploadToCloudinaryWithType = async (
         if (error) {
           if (error) {
             console.error(`Error uploading ${fileType} to Cloudinary:`, error);
-            console.error('Error details:', JSON.stringify(error, null, 2)); // ✅ More details
+            console.error('Error details:', JSON.stringify(error, null, 2));
             return reject(error);
           }
           return reject(error);

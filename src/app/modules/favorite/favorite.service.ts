@@ -28,7 +28,14 @@ const createFavorite = async (userId: string, articleId: string) => {
     return {
       articleId,
       isFavorite: false,
-      data: oldData,
+      data: {
+        id: existingFavorite.id,
+        userId: existingFavorite.userId,
+        articleId: existingFavorite.articleId,
+        isFavorite: false,
+        createdAt: existingFavorite.createdAt,
+        updatedAt: new Date(),
+      },
       message: 'Removed from favorites',
     };
   } else {

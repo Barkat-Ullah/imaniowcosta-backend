@@ -109,7 +109,14 @@ const getChildDocumentListIntoDb = async (childId: string) => {
   // Fetch all documents for this child
   const documents = await prisma.childDocument.findMany({
     where: { childId },
-    include: {
+    select: {
+      id: true,
+      image: true,
+      video: true,
+      pdf: true,
+      files: true,
+      childId: true,
+      uploadedAt: true,
       child: {
         select: {
           id: true,

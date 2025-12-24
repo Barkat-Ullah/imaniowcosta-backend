@@ -15,7 +15,7 @@ router.post(
     { name: 'image', maxCount: 1 },
     { name: 'pdf', maxCount: 1 },
   ]),
-  validateRequest.body(learningLibraryValidation.createSchema),
+  // validateRequest.body(learningLibraryValidation.createSchema),
   learningLibraryController.createLearningLibrary,
 );
 

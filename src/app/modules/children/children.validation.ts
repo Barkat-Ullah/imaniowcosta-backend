@@ -2,8 +2,6 @@ import { z } from 'zod';
 import {
   PersonalizationType,
   LearningStage,
-  SupportReceived,
-  CommunicationLevel,
   ToiletingStatus,
 } from '@prisma/client';
 
@@ -13,8 +11,8 @@ const createSchema = z.object({
   personalizationType: z.nativeEnum(PersonalizationType).optional(),
   learningStage: z.nativeEnum(LearningStage).optional(),
   ageGroup: z.string().optional(),
-  supportReceived: z.array(z.nativeEnum(SupportReceived)).optional(),
-  communication: z.nativeEnum(CommunicationLevel).optional(),
+  supportReceived: z.array(z.string()).optional(),
+  communication: z.array(z.string()).optional(),
   toileting: z.nativeEnum(ToiletingStatus).optional(),
   diagnoses: z.array(z.string()).optional(),
 });

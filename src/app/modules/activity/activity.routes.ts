@@ -9,15 +9,24 @@ import { UserRoleEnum } from '@prisma/client';
 const router = express.Router();
 
 router.get('/', auth(), activityController.getActivityList);
-router.get('/my', auth(UserRoleEnum.USER), activityController.getMyActivityList);
+router.get(
+  '/my',
+  auth(UserRoleEnum.USER, UserRoleEnum.CARE_GIVER),
+  activityController.getMyActivityList,
+);
 
 router.get('/:id', auth(), activityController.getActivityById);
 
 router.post(
   '/',
-  auth(UserRoleEnum.ADMIN, UserRoleEnum.USER),
+  auth(UserRoleEnum.ADMIN, UserRoleEnum.USER, UserRoleEnum.CARE_GIVER),
   fileUploader.uploadSingle,
   activityController.createActivity,
+);
+router.post(
+  '/:activityId',
+  auth(UserRoleEnum.USER, UserRoleEnum.CARE_GIVER),
+  activityController.completeActivity,
 );
 
 router.put('/:id', auth(), activityController.updateActivity);

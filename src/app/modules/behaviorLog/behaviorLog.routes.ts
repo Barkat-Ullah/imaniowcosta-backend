@@ -5,7 +5,7 @@ import { BehaviorLogController } from './behaviorLog.controller';
 
 const router = express.Router();
 
-router.put(
+router.post(
   '/',
   auth(UserRoleEnum.USER, UserRoleEnum.CARE_GIVER),
   BehaviorLogController.updateBehaviorLog,

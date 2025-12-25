@@ -36,14 +36,15 @@ model User {
   roomSender   Room[] @relation("RoomSender")
   roomReceiver Room[] @relation("RoomReceiver")
 
-  sentChats         Chat[]             @relation("ChatSender")
-  receivedChats     Chat[]             @relation("ChatReceiver")
-  learningLibraries LearningLibrary[]  @relation("BlogCreator")
-  favorites         favorite[]         @relation("UserCreator")
-  childrenS         Children[]         @relation("ChildrenCreator")
-  subscriptions     UserSubscription[] @relation("UserSubscriptions")
-  activities        Activity[]         @relation("ActivityCreator")
-  events            Event[]            @relation("EventCreator")
+  sentChats               Chat[]                  @relation("ChatSender")
+  receivedChats           Chat[]                  @relation("ChatReceiver")
+  learningLibraries       LearningLibrary[]       @relation("BlogCreator")
+  favorites               favorite[]              @relation("UserCreator")
+  childrenS               Children[]              @relation("ChildrenCreator")
+  subscriptions           UserSubscription[]      @relation("UserSubscriptions")
+  activities              Activity[]              @relation("ActivityCreator")
+  events                  Event[]                 @relation("EventCreator")
+  userCompletedActivities UserCompletedActivity[] @relation("CompleteActivity")
 
   //self relation
   createdById  String? @db.ObjectId
@@ -57,7 +58,7 @@ model User {
 }
 
 model LearningLibrary {
-  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
   title         String
   subTitle      String?
   description   String

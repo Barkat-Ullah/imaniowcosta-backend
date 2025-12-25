@@ -194,7 +194,6 @@ const getLearningLibraryListIntoDb = async (
 
 // get LearningLibrary by id
 const getLearningLibraryById = async (id: string, userId: string) => {
-  // Make cache key user-specific
   const cacheKey = `${CacheKeyGenerator.byId(CACHE_PREFIX, id)}:user:${userId}`;
 
   return withCache(

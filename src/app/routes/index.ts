@@ -16,6 +16,7 @@ import { MetaRoutes } from '../modules/meta/meta.routes';
 import { activityRoutes } from '../modules/activity/activity.routes';
 import { eventRoutes } from '../modules/event/event.routes';
 import { BehaviorLogRoutes } from '../modules/behaviorLog/behaviorLog.routes';
+import { AnalyticsRoutes } from '../modules/Analytics/Analytics.routes';
 
 const router = express.Router();
 
@@ -87,6 +88,10 @@ const moduleRoutes = [
   {
     path: '/meta',
     route: MetaRoutes,
+  },
+  {
+    path: '/analytics',
+    route: AnalyticsRoutes,
   },
 ];
 

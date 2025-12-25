@@ -83,7 +83,6 @@ const getTodayInspire = async () => {
   tomorrow.setDate(today.getDate() + 1);
   let result = await prisma.inspire.findFirst({
     where: {
-      // date: { gte: today },
       status: EnumInspireStatus.Sent,
     },
     orderBy: { updatedAt: 'desc' },

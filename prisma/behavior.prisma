@@ -1,10 +1,14 @@
 model BehaviorLog {
-    id                String   @id @default(auto()) @map("_id") @db.ObjectId
-    selectedBehaviors String[]
-    childId           String   @unique @db.ObjectId
-    child             Children @relation(fields: [childId], references: [id])
-    createdAt         DateTime @default(now())
-    updatedAt         DateTime @updatedAt
+    id      String   @id @default(auto()) @map("_id") @db.ObjectId
+    childId String   @db.ObjectId
+    child   Children @relation(fields: [childId], references: [id])
 
-    @@map("behavior_logs")
+    behavior String
+    logDate  DateTime
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([childId, logDate])
+    @@map("behaviorLog")
 }

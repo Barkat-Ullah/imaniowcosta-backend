@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { ActivityEnum, Prisma, UserRoleEnum } from '@prisma/client';
 import { IPaginationOptions } from '../../interface/pagination.type';
 import { prisma } from '../../utils/prisma';
 import ApiError from '../../errors/AppError';
@@ -18,7 +18,35 @@ const createActivity = async (req: Request) => {
     image = (await fileUploader.uploadToCloudinary(file)).Location;
   }
 
-  const addedData = { ...data, image, userId };
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      role: true,
+    },
+  });
+
+  let accessId;
+  if (user?.role === UserRoleEnum.CARE_GIVER) {
+    const managedParents = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        createdBy: {
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!managedParents?.createdBy) {
+      throw new ApiError(httpStatus.FORBIDDEN, 'No access to any children');
+    }
+    accessId = managedParents.createdBy.id;
+  } else {
+    accessId = userId;
+  }
+
+  const addedData = { ...data, image, userId: accessId };
   const result = await prisma.activity.create({ data: addedData });
   return result;
 };
@@ -124,8 +152,35 @@ const getMyActivityList = async (userId: string) => {
   if (!userId) {
     throw new ApiError(404, 'User not found');
   }
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      role: true,
+    },
+  });
+
+  let accessId;
+  if (user?.role === UserRoleEnum.CARE_GIVER) {
+    const managedParents = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        createdBy: {
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!managedParents?.createdBy) {
+      throw new ApiError(httpStatus.FORBIDDEN, 'No access to any children');
+    }
+    accessId = managedParents.createdBy.id;
+  } else {
+    accessId = userId;
+  }
   const result = await prisma.activity.findMany({
-    where: { userId },
+    where: { userId: accessId },
   });
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Activity not found');
@@ -141,6 +196,60 @@ const getActivityById = async (id: string) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'Activity not found');
   }
   return result;
+};
+
+const markActivityCompleted = async (activityId: string, userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      role: true,
+    },
+  });
+
+  let accessId;
+  if (user?.role === UserRoleEnum.CARE_GIVER) {
+    const managedParents = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        createdBy: {
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!managedParents?.createdBy) {
+      throw new ApiError(httpStatus.FORBIDDEN, 'No access to any children');
+    }
+    accessId = managedParents.createdBy.id;
+  } else {
+    accessId = userId;
+  }
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const existing = await prisma.userCompletedActivity.findFirst({
+    where: {
+      activityId,
+      completedAt: { gte: today },
+    },
+  });
+
+  if (existing) {
+    throw new Error('Activity already marked as completed today');
+  }
+
+  return prisma.userCompletedActivity.create({
+    data: {
+      activityId,
+      userId: accessId,
+      completedAt: new Date(),
+    },
+    include: {
+      activity: true,
+    },
+  });
 };
 
 // update Activity
@@ -165,6 +274,7 @@ export const activityService = {
   getActivityListIntoDb,
   getActivityById,
   updateActivityIntoDb,
+  markActivityCompleted,
   deleteActivityIntoDb,
   getMyActivityList,
 };

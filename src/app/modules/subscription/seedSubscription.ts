@@ -43,7 +43,7 @@ async function seedSubscriptions() {
 
   for (const plan of plans) {
     const existing = await prisma.subscription.findFirst({
-      where: { title: plan.title },
+      where: { duration: plan.duration },
     });
 
     if (!existing) {

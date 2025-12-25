@@ -9,19 +9,39 @@ model Activity {
     image       String?
     link        String?
     date        DateTime?
+    status      ActivityEnum   @default(Pending)
 
-    userId    String?  @db.ObjectId
-    user      User?    @relation("ActivityCreator", fields: [userId], references: [id])
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    userId                  String?                 @db.ObjectId
+    user                    User?                   @relation("ActivityCreator", fields: [userId], references: [id])
+    createdAt               DateTime                @default(now())
+    updatedAt               DateTime                @updatedAt
+    userCompletedActivities UserCompletedActivity[]
 
     @@map("activity")
+}
+
+model UserCompletedActivity {
+    id         String @id @default(auto()) @map("_id") @db.ObjectId
+    userId     String @db.ObjectId
+    activityId String @db.ObjectId
+
+    user     User     @relation("CompleteActivity", fields: [userId], references: [id])
+    activity Activity @relation(fields: [activityId], references: [id])
+
+    completedAt DateTime @default(now())
+
+    @@map("userCompletedActivity")
 }
 
 enum StageEnum {
     Early
     Emerging
     Growing
+}
+
+enum ActivityEnum {
+    Pending
+    Complete
 }
 
 enum ActivitiesEnum {
@@ -31,4 +51,5 @@ enum ActivitiesEnum {
     Move_and_Play
     Learning_and_skills
 }
+
 //* log behavior and food

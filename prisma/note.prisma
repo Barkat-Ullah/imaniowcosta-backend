@@ -54,6 +54,7 @@ enum SpecialtyEnum {
     Coordinator
     Baby_sitter
     Other
+    Doctor
 }
 
 // 3. Health & Care Notes

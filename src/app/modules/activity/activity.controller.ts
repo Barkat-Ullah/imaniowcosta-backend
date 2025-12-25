@@ -7,7 +7,6 @@ import { activityService } from './activity.service';
 
 // create Activity
 const createActivity = catchAsync(async (req: Request, res: Response) => {
-
   const result = await activityService.createActivity(req);
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
@@ -22,7 +21,7 @@ const activityFilterableFields = ['searchTerm', 'id', 'createdAt', 'activity'];
 const getActivityList = catchAsync(async (req: Request, res: Response) => {
   const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
   const filters = pick(req.query, activityFilterableFields);
-  const result = await activityService.getActivityListIntoDb( options, filters);
+  const result = await activityService.getActivityListIntoDb(options, filters);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -44,7 +43,7 @@ const getMyActivityList = catchAsync(async (req: Request, res: Response) => {
 });
 // get Activity by id
 const getActivityById = catchAsync(async (req: Request, res: Response) => {
-  const {id} = req.params;
+  const { id } = req.params;
   const result = await activityService.getActivityById(id);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -56,7 +55,7 @@ const getActivityById = catchAsync(async (req: Request, res: Response) => {
 
 // update Activity
 const updateActivity = catchAsync(async (req: Request, res: Response) => {
-  const {id} = req.params;
+  const { id } = req.params;
   const data = req.body;
   const result = await activityService.updateActivityIntoDb(id, data);
   sendResponse(res, {
@@ -66,10 +65,24 @@ const updateActivity = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const completeActivity = catchAsync(async (req: Request, res: Response) => {
+  const { activityId } = req.params;
+  const userId = req.user.id;
+  const result = await activityService.markActivityCompleted(
+    activityId,
+    userId,
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Activity completed successfully',
+    data: result,
+  });
+});
 
 // delete Activity
 const deleteActivity = catchAsync(async (req: Request, res: Response) => {
-  const {id} = req.params;
+  const { id } = req.params;
   const result = await activityService.deleteActivityIntoDb(id);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -84,6 +97,7 @@ export const activityController = {
   getActivityList,
   getActivityById,
   updateActivity,
+  completeActivity,
   deleteActivity,
   getMyActivityList,
 };

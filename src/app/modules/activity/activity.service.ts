@@ -269,6 +269,8 @@ const deleteActivityIntoDb = async (id: string) => {
   return result;
 };
 
+
+
 export const activityService = {
   createActivity,
   getActivityListIntoDb,

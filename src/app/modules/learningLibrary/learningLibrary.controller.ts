@@ -49,7 +49,10 @@ const getLearningLibraryList = catchAsync(
 const getLearningLibraryById = catchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.params;
-    const result = await learningLibraryService.getLearningLibraryById(id);
+    const result = await learningLibraryService.getLearningLibraryById(
+      id,
+      req.user.id,
+    );
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,

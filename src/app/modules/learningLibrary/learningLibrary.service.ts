@@ -6,8 +6,12 @@ import httpStatus from 'http-status';
 import { paginationHelper } from '../../utils/calculatePagination';
 import { Request } from 'express';
 import { fileUploader } from '../../utils/fileUploader';
-import { CACHE_CONFIG, CacheKeyGenerator, CacheManager, withCache } from '../../utils/cache/cacheManager';
-
+import {
+  CACHE_CONFIG,
+  CacheKeyGenerator,
+  CacheManager,
+  withCache,
+} from '../../utils/cache/cacheManager';
 
 // Cache prefix for learning library
 const CACHE_PREFIX = CACHE_CONFIG.LEARNING_LIBRARY.prefix;
@@ -28,33 +32,28 @@ const createLearningLibrary = async (req: Request) => {
     pdf?: string;
   } = {};
 
-    try {
-      // Image
-      if (files?.image?.[0]) {
-        const upload = await fileUploader.uploadToCloudinaryWithType(
-          files.image[0],
-          'image',
-        );
-        uploadedFiles.image = upload.Location;
-      }
-
-      // PDF Upload
-      if (files?.pdf?.[0]) {
-        const upload = await fileUploader.uploadToCloudinaryWithType(
-          files.pdf[0],
-          'pdf',
-        );
-        uploadedFiles.pdf = upload.Location;
-      }
-
-    } catch (error: any) {
-      console.error('Cloudinary upload error:', error); // ← Log real error!
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        'Failed to upload file',
-        error,
+  try {
+    // Image
+    if (files?.image?.[0]) {
+      const upload = await fileUploader.uploadToCloudinaryWithType(
+        files.image[0],
+        'image',
       );
+      uploadedFiles.image = upload.Location;
     }
+
+    // PDF Upload
+    if (files?.pdf?.[0]) {
+      const upload = await fileUploader.uploadToCloudinaryWithType(
+        files.pdf[0],
+        'pdf',
+      );
+      uploadedFiles.pdf = upload.Location;
+    }
+  } catch (error: any) {
+    console.error('Cloudinary upload error:', error); // ← Log real error!
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to upload file', error);
+  }
 
   const addedData = { ...data, ...uploadedFiles, createdId };
   const result = await prisma.learningLibrary.create({ data: addedData });
@@ -194,10 +193,10 @@ const getLearningLibraryListIntoDb = async (
 };
 
 // get LearningLibrary by id
-const getLearningLibraryById = async (id: string) => {
-  const cacheKey = CacheKeyGenerator.byId(CACHE_PREFIX, id);
+const getLearningLibraryById = async (id: string, userId: string) => {
+  // Make cache key user-specific
+  const cacheKey = `${CacheKeyGenerator.byId(CACHE_PREFIX, id)}:user:${userId}`;
 
-  // Use withCache helper
   return withCache(
     cacheKey,
     async () => {
@@ -209,7 +208,19 @@ const getLearningLibraryById = async (id: string) => {
         throw new ApiError(httpStatus.NOT_FOUND, 'LearningLibrary not found');
       }
 
-      return result;
+      // Get user's favorite articles
+      const userFavorites = await prisma.favorite.findMany({
+        where: { userId },
+        select: { articleId: true },
+      });
+
+      const favoriteArticleIds = new Set(userFavorites.map(f => f.articleId));
+      const isFavorite = favoriteArticleIds.has(id);
+
+      return {
+        ...result,
+        isFavorite,
+      };
     },
     CACHE_TTL,
   );

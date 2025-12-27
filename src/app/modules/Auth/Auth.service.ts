@@ -71,11 +71,16 @@ const loginWithOtpFromDB = async (
       config.jwt.access_expires_in as SignOptions['expiresIn'],
     );
 
+    const children = await prisma.children.findMany({
+      where: { creatorId: userData.id, isDeleted: false },
+    });
+
     return {
       id: userData.id,
       name: userData.fullName,
       email: userData.email,
       role: userData.role,
+      children:children.length,
       accessToken,
     };
   }

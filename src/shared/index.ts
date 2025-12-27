@@ -5,7 +5,6 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import catchAsync from '../app/utils/catchAsync';
 import AppError from '../app/errors/AppError';
-
 import { prisma } from '../app/utils/prisma';
 import { fileUploader } from '../app/utils/fileUploader';
 
@@ -15,6 +14,7 @@ export const setupMiddlewares = (app: Application): void => {
     cors({
       origin: [
         'https://imanidacosta-dashboard.vercel.app',
+        'https://dashboard-imandiacosta.vercel.app',
         'http://localhost:3001',
         'http://localhost:3000',
       ],

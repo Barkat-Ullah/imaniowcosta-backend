@@ -25,6 +25,8 @@ model UserCompletedActivity {
     userId     String @db.ObjectId
     activityId String @db.ObjectId
 
+    isCompleted Boolean
+
     user     User     @relation("CompleteActivity", fields: [userId], references: [id])
     activity Activity @relation(fields: [activityId], references: [id])
 

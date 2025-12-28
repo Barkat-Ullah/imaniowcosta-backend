@@ -15,7 +15,9 @@ export const setupMiddlewares = (app: Application): void => {
       origin: [
         'https://imanidacosta-dashboard.vercel.app',
         'https://dashboard-imandiacosta.vercel.app',
+        "https://imanidacosta-webpage-rouge.vercel.app",
         'http://localhost:3001',
+        'http://localhost:3002',
         'http://localhost:3000',
       ],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

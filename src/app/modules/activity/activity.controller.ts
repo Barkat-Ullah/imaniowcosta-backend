@@ -21,7 +21,7 @@ const activityFilterableFields = ['searchTerm', 'id', 'createdAt', 'activity'];
 const getActivityList = catchAsync(async (req: Request, res: Response) => {
   const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
   const filters = pick(req.query, activityFilterableFields);
-  const result = await activityService.getActivityListIntoDb(options, filters);
+  const result = await activityService.getActivityListIntoDb(options, filters,req.user.id);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

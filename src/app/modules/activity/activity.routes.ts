@@ -15,7 +15,11 @@ router.get(
   activityController.getMyActivityList,
 );
 
-router.get('/:id', auth(), activityController.getActivityById);
+router.get(
+  '/:id',
+  auth(UserRoleEnum.ADMIN, UserRoleEnum.USER, UserRoleEnum.CARE_GIVER),
+  activityController.getActivityById,
+);
 
 router.post(
   '/',

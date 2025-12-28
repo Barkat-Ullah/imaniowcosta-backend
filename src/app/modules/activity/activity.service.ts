@@ -63,6 +63,7 @@ const activitySearchAbleFields = ['title'];
 const getActivityListIntoDb = async (
   options: IPaginationOptions,
   filters: IActivityFilterRequest,
+  userId: string,
 ) => {
   const { page, limit, skip } = paginationHelper.calculatePagination(options);
   const { searchTerm, ...filterData } = filters;
@@ -124,6 +125,17 @@ const getActivityListIntoDb = async (
   const whereConditions: Prisma.ActivityWhereInput =
     andConditions.length > 0 ? { AND: andConditions } : {};
 
+  const userCompleted = await prisma.userCompletedActivity.findMany({
+    where: {
+      userId,
+    },
+    select: {
+      activityId: true,
+    },
+  });
+
+  const CompletedActivityIds = new Set(userCompleted.map(f => f.activityId));
+
   const result = await prisma.activity.findMany({
     skip,
     take: limit,
@@ -137,13 +149,18 @@ const getActivityListIntoDb = async (
     where: whereConditions,
   });
 
+  const formattedData = result.map(activity => ({
+    ...activity,
+    isCompleted: CompletedActivityIds.has(activity.id),
+  }));
+
   return {
     meta: {
       total,
       page,
       limit,
     },
-    data: result,
+    data: formattedData,
   };
 };
 
@@ -244,6 +261,7 @@ const markActivityCompleted = async (activityId: string, userId: string) => {
     data: {
       activityId,
       userId: accessId,
+      isCompleted: true,
       completedAt: new Date(),
     },
     include: {
@@ -268,8 +286,6 @@ const deleteActivityIntoDb = async (id: string) => {
   });
   return result;
 };
-
-
 
 export const activityService = {
   createActivity,

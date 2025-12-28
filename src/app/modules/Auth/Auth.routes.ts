@@ -39,13 +39,13 @@ router.post(
 
 router.post(
   '/forget-password',
-  validateRequest.body(authValidation.forgetPasswordValidationSchema),
+  // validateRequest.body(authValidation.forgetPasswordValidationSchema),
   AuthControllers.forgetPassword,
 );
 
 router.post(
   '/reset-password',
-  validateRequest.body(authValidation.resetPasswordValidationSchema),
+  // validateRequest.body(authValidation.resetPasswordValidationSchema),
   AuthControllers.resetPassword,
 );
 

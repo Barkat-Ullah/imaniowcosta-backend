@@ -228,17 +228,44 @@ const getLearningLibraryById = async (id: string, userId: string) => {
 const updateLearningLibraryIntoDb = async (id: string, req: Request) => {
   const createdId = req.user.id;
   const data = req.body.data ? JSON.parse(req.body.data) : {};
-  const file = req.file;
-  let image;
+  const files = req.files as
+    | {
+        [fieldname: string]: Express.Multer.File[];
+      }
+    | undefined;
 
-  if (file) {
-    image = (await fileUploader.uploadToCloudinary(file)).Location;
+  let uploadedFiles: {
+    image?: string;
+    pdf?: string;
+  } = {};
+
+  try {
+    // Image
+    if (files?.image?.[0]) {
+      const upload = await fileUploader.uploadToCloudinaryWithType(
+        files.image[0],
+        'image',
+      );
+      uploadedFiles.image = upload.Location;
+    }
+
+    // PDF Upload
+    if (files?.pdf?.[0]) {
+      const upload = await fileUploader.uploadToCloudinaryWithType(
+        files.pdf[0],
+        'pdf',
+      );
+      uploadedFiles.pdf = upload.Location;
+    }
+  } catch (error: any) {
+    console.error('Cloudinary upload error:', error);
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to upload file', error);
   }
 
-  const addedData = { ...data, image, createdId };
+  const updatedData = { ...data, ...uploadedFiles };
   const result = await prisma.learningLibrary.update({
     where: { id },
-    data: addedData,
+    data: updatedData,
   });
 
   // Invalidate specific item cache

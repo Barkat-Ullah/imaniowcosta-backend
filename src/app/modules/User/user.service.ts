@@ -386,16 +386,6 @@ const updateMyProfileIntoDB = async (id: string, req: Request) => {
   const result = await prisma.user.update({
     where: { id },
     data: updatedData,
-    select: {
-      id: true,
-      fullName: true,
-      email: true,
-      phoneNumber: true,
-      image: true,
-      role: true,
-      status: true,
-      address: true,
-    },
   });
 
   return result;

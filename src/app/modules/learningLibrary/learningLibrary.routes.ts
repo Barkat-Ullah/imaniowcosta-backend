@@ -34,7 +34,10 @@ router.get(
 router.put(
   '/:id',
   auth(UserRoleEnum.ADMIN),
-  fileUploader.uploadSingle,
+  fileUploader.upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'pdf', maxCount: 1 },
+  ]),
   learningLibraryController.updateLearningLibrary,
 );
 

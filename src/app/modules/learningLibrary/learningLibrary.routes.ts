@@ -24,7 +24,15 @@ router.get(
   auth(UserRoleEnum.ADMIN, UserRoleEnum.USER, UserRoleEnum.CARE_GIVER),
   learningLibraryController.getLearningLibraryList,
 );
+router.get(
+  '/all',
+  learningLibraryController.getAllArticle,
+);
 
+router.get(
+  '/all/:articleId',
+  learningLibraryController.getArticleById,
+);
 router.get(
   '/:id',
   auth(UserRoleEnum.ADMIN, UserRoleEnum.USER, UserRoleEnum.CARE_GIVER),

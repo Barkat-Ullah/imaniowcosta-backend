@@ -44,6 +44,29 @@ const getLearningLibraryList = catchAsync(
     });
   },
 );
+const learningLibraryFilterableField = [
+  'searchTerm',
+  'id',
+  'createdAt',
+  'content',
+];
+const getAllArticle = catchAsync(
+  async (req: Request, res: Response) => {
+    const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
+    const filters = pick(req.query, learningLibraryFilterableField);
+    const result = await learningLibraryService.getAllArticleLibraryIntoDb(
+      options,
+      filters,
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'LearningLibrary list retrieved successfully',
+      meta: result.meta,
+      data: result.data,
+    });
+  },
+);
 
 // get LearningLibrary by id
 const getLearningLibraryById = catchAsync(
@@ -53,6 +76,18 @@ const getLearningLibraryById = catchAsync(
       id,
       req.user.id,
     );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'LearningLibrary details retrieved successfully',
+      data: result,
+    });
+  },
+);
+const getArticleById = catchAsync(
+  async (req: Request, res: Response) => {
+    const { articleId } = req.params;
+    const result = await learningLibraryService.getArticleById(articleId);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -99,6 +134,8 @@ const deleteLearningLibrary = catchAsync(
 
 export const learningLibraryController = {
   createLearningLibrary,
+  getAllArticle,
+  getArticleById,
   getLearningLibraryList,
   getLearningLibraryById,
   updateLearningLibrary,

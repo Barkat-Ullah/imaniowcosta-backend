@@ -44,7 +44,7 @@ const getMyActivityList = catchAsync(async (req: Request, res: Response) => {
 // get Activity by id
 const getActivityById = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const result = await activityService.getActivityById(id);
+  const result = await activityService.getActivityById(id,req.user.id);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

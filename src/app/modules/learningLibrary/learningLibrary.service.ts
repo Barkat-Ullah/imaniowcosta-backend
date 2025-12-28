@@ -308,8 +308,138 @@ const deleteLearningLibraryIntoDb = async (id: string, userId: string) => {
   return result;
 };
 
+type ILearningLibraryFilter = {
+  searchTerm?: string;
+  id?: string;
+  createdAt?: string;
+  content?: string;
+};
+
+const learningLibrarySearchAbleField = ['title'];
+
+const getAllArticleLibraryIntoDb = async (
+  options: IPaginationOptions,
+  filters: ILearningLibraryFilter,
+) => {
+  const { page, limit, skip } = paginationHelper.calculatePagination(options);
+  const { searchTerm, ...filterData } = filters;
+
+  // Generate cache key based on all parameters
+  const cacheKey = CacheKeyGenerator.list(CACHE_PREFIX, {
+    page,
+    limit,
+    searchTerm,
+    ...filterData,
+  });
+
+  // Try to get from cache
+  const cached = CacheManager.get<any>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  const andConditions: Prisma.LearningLibraryWhereInput[] = [];
+
+  if (searchTerm) {
+    andConditions.push({
+      OR: [
+        ...learningLibrarySearchAbleField.map(field => ({
+          [field]: {
+            contains: searchTerm,
+            mode: 'insensitive',
+          },
+        })),
+      ],
+    });
+  }
+  if (Object.keys(filterData).length) {
+    Object.keys(filterData).forEach(key => {
+      const value = (filterData as any)[key];
+      if (value === '' || value === null || value === undefined) return;
+      if (key === 'createdAt' && value) {
+        const start = new Date(value);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(value);
+        end.setHours(23, 59, 59, 999);
+        andConditions.push({
+          createdAt: {
+            gte: start.toISOString(),
+            lte: end.toISOString(),
+          },
+        });
+        return;
+      }
+      if (key.includes('.')) {
+        const [relation, field] = key.split('.');
+        andConditions.push({
+          [relation]: {
+            some: { [field]: value },
+          },
+        });
+        return;
+      }
+      if (key === 'content') {
+        const contents = Array.isArray(value) ? value : [value];
+        andConditions.push({
+          content: { in: contents },
+        });
+        return;
+      }
+      andConditions.push({
+        [key]: value,
+      });
+    });
+  }
+
+  const whereConditions: Prisma.LearningLibraryWhereInput =
+    andConditions.length > 0 ? { AND: andConditions } : {};
+
+  const result = await prisma.learningLibrary.findMany({
+    skip,
+    take: limit,
+    where: whereConditions,
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  const total = await prisma.learningLibrary.count({
+    where: whereConditions,
+  });
+
+  const response = {
+    meta: { total, page, limit },
+    data: result,
+  };
+
+  // Store in cache
+  CacheManager.set(cacheKey, response, CACHE_TTL);
+
+  return response;
+};
+
+const getArticleById = async (id: string) => {
+  const cacheKey = `${CacheKeyGenerator.byId(CACHE_PREFIX, id)}`;
+
+  return withCache(
+    cacheKey,
+    async () => {
+      const result = await prisma.learningLibrary.findUnique({
+        where: { id },
+      });
+
+      if (!result) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'LearningLibrary not found');
+      }
+      return result;
+    },
+    CACHE_TTL,
+  );
+};
 export const learningLibraryService = {
   createLearningLibrary,
+  getAllArticleLibraryIntoDb,
+  getArticleById,
   getLearningLibraryListIntoDb,
   getLearningLibraryById,
   updateLearningLibraryIntoDb,

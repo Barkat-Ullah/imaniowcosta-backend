@@ -205,14 +205,21 @@ const getMyActivityList = async (userId: string) => {
   return result;
 };
 
-const getActivityById = async (id: string) => {
+const getActivityById = async (id: string, userId: string) => {
   const result = await prisma.activity.findUnique({
     where: { id },
   });
   if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Activity not found');
   }
-  return result;
+  const userFavorites = await prisma.userCompletedActivity.findMany({
+    where: { userId },
+    select: { activityId: true },
+  });
+
+  const favoriteArticleIds = new Set(userFavorites.map(f => f.activityId));
+  const isFavorite = favoriteArticleIds.has(id);
+  return { ...result, isFavorite };
 };
 
 const markActivityCompleted = async (activityId: string, userId: string) => {

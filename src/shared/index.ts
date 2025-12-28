@@ -13,9 +13,12 @@ export const setupMiddlewares = (app: Application): void => {
   app.use(
     cors({
       origin: [
+        // 'https:\/\/.*\.vercel\.app$',
+        'https://frontend-imandiacosta.vercel.app',
         'https://imanidacosta-dashboard.vercel.app',
         'https://dashboard-imandiacosta.vercel.app',
-        "https://imanidacosta-webpage-rouge.vercel.app",
+        // "https://imanidacosta-webpage-rouge.vercel.app",
+        // "https://imanidacosta-web-frontend.vercel.app",
         'http://localhost:3001',
         'http://localhost:3002',
         'http://localhost:3000',

@@ -51,7 +51,7 @@ const createLearningLibrary = async (req: Request) => {
       uploadedFiles.pdf = upload.Location;
     }
   } catch (error: any) {
-    console.error('Cloudinary upload error:', error); // ← Log real error!
+    console.error('Cloudinary upload error:', error);
     throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to upload file', error);
   }
 

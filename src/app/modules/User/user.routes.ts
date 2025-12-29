@@ -30,7 +30,7 @@ router.get(
 );
 router.get('/:id', auth('ANY'), UserControllers.getUserDetails);
 
-router.delete('/soft-delete', auth('ANY'), UserControllers.softDeleteUser);
+router.delete('/soft-delete/:id', auth(), UserControllers.softDeleteUser);
 router.delete(
   '/hard-delete/:id',
   auth(UserRoleEnum.ADMIN),

@@ -84,6 +84,7 @@ const updateUserStatus = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
 const updateUserApproval = catchAsync(async (req, res) => {
   const { userId } = req.body;
   const result = await UserServices.updateUserApproval(userId);
@@ -105,6 +106,7 @@ const softDeleteUser = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
 const hardDeleteUser = catchAsync(async (req, res) => {
   const userId = req.user.id;
   const { id } = req.params;
